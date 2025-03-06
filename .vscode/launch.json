@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-PosApplication<pos>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.rollerspeed.pos.PosApplication",
+            "projectName": "pos",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}
