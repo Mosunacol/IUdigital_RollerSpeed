@@ -14,3 +14,4 @@ import com.rollerspeed.pos.Model.UserModel;
 public interface UserRepository extends CrudRepository<UserModel,Long>{
        
 }
+
