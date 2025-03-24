@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo de Cursos</title>
+</head>
+<body>
+    <div th:fragment="catalogo">
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+            <div class="col" th:each="curso : ${Cursos}">
+                <div class="card" style="width: 18rem;">
+                    <img th:src="@{/images/{filename}(filename=${curso.rutaFoto})}" alt="Foto del curso">
+                    <div class="card-body">
+                        <p class="card-text" th:text="${curso.nombre}"></p>
+                        <p class="card-text" th:text="${curso.descripcion}"></p>
+                        <p class="card-text">Precio: <span th:text="${curso.precio}"></span></p>
+                        <p class="card-text">Duración: <span th:text="${curso.duracion}"></span> horas</p>
+                    </div>
+                </div>
+            </div>
+        </div> 
+    </div>
+</body>
+</html>

@@ -1,17 +1,21 @@
 package com.rollerspeed.pos.Repository;
 
-import java.util.List;
 import java.util.Optional;
 
-import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 
-import com.rollerspeed.pos.Model.UserModel;
+import com.rollerspeed.pos.Model.User;
 
 @Repository
 
-public interface UserRepository extends CrudRepository<UserModel,Long>{
-       
+public interface UserRepository extends JpaRepository<User,Long>{
+
+    Optional<User> findByUsername(String username);
+
+    boolean existsByUsername(String username);
+
 }
+       
 

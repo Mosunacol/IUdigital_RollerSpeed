@@ -1,5 +1,6 @@
 package com.rollerspeed.pos.Controller;
 
+
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,16 +19,4 @@ public class UserController {
 }  
 
 
-
-
-
-
-//@GetMapping("/listar")
-//public String listarRollerspeed(Model model){
-    //  Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-    //  String username = auth.getName(); // Nombre del usuario autenticado
-    // model.addAttribute("Roller", rollerService.listarRollerspeed());
-    //  model.addAttribute("user",username);
-    //return "listarRollerspeed";
-//}
 
