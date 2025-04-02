@@ -8,47 +8,111 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-      <!-- Incluir el fragmento del navbar -->
-
-      <div th:replace="~{fragments/navbar :: navbar}"></div>
+    <!-- Navbar -->
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
 
     <div class="container mt-5">
-        <!-- Encabezado -->
-        <div class="text-center mb-4">
-            <h1 class="display-5">Crear una Cuenta</h1>
-            <p class="text-muted">Por favor, completa los campos para registrarte.</p>
-        </div>
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white">
+                        <h2 class="text-center mb-0">Crear una Cuenta</h2>
+                    </div>
+                    <div class="card-body p-4">
+                        <p class="text-muted text-center mb-4">Por favor, completa los campos para registrarte.</p>
+                        
+                        <!-- Mensajes de error/success -->
+                        <div th:if="${error}" class="alert alert-danger" role="alert">
+                            <span th:text="${error}"></span>
+                        </div>
+                        <div th:if="${success}" class="alert alert-success" role="alert">
+                            <span th:text="${success}"></span>
+                        </div>
+                        
+                        <!-- Formulario - Ajustes clave -->
+                        <form th:action="@{/registrer}" th:object="${user}" method="post" class="needs-validation" novalidate>
+                            <!-- Token CSRF - Posición mejorada -->
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                            
+                            <!-- Nombre de Usuario -->
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Nombre de Usuario</label>
+                                <input type="text" class="form-control" 
+                                       id="username" 
+                                       th:field="*{username}"
+                                       name="username"
+                                       placeholder="Ingresa tu nombre de usuario" 
+                                       required>
+                                <div class="invalid-feedback">
+                                    Por favor ingresa un nombre de usuario.
+                                </div>
+                            </div>
 
-        <!-- Formulario -->
+                            <!-- Contraseña -->
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Contraseña</label>
+                                <input type="password" class="form-control" 
+                                       id="password" 
+                                       th:field="*{password}"
+                                       name="password"
+                                       placeholder="Crea una contraseña segura (mínimo 6 caracteres)" 
+                                       minlength="6"
+                                       required>
+                                <div class="invalid-feedback">
+                                    La contraseña debe tener al menos 6 caracteres.
+                                </div>
+                            </div>
 
-        <form action="/registrer" method="post">
-            <label>Username:</label>
-            <input type="text" name="username" required>
-            
-            <label>Password:</label>
-            <input type="password" name="password" required>
-        
-            <label>Role:</label>
-            <select name="role">
-                <option value="ADMINISTRADOR">Administrador</option>
-                <option value="INSTRUCTOR">Instructor</option>
-                <option value="ALUMNO">Alumno</option>
-                <option value="PUBLICO">Publico</option>
+                            <!-- Selección de Rol - Mejorado -->
+                            <div class="mb-4">
+                                <label for="rolename" class="form-label">Tipo de Usuario</label>
+                                <select class="form-select" 
+                                        id="rolename" 
+                                        th:field="*{rolename}"
+                                        name="rolename"
+                                        required>
+                                    <option value="" disabled selected>-- Selecciona tu rol --</option>
+                                    <option th:each="role : ${allowedRoles}" 
+                                            th:value="${role}" 
+                                            th:text="${role}"></option>
+                                </select>
+                                <div class="invalid-feedback">
+                                    Por favor selecciona un rol válido.
+                                </div>
+                            </div>
 
-            </select>
-        
-            <button type="submit">Registrar</button>
-        </form> 
-
-                <!-- Mensaje de Error (Opcional) -->
-                <!-- <div th:if="${#fields.hasErrors()}" class="mt-3">
-                    <p class="text-danger text-center">Corrige los errores antes de enviar el formulario.</p>
-                </div> -->
+                            <!-- Botón de Registro -->
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    Registrarse
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- Bootstrap 5 JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Validación de formulario mejorada -->
+    <script>
+        (function() {
+            'use strict';
+            const forms = document.querySelectorAll('.needs-validation');
+            
+            Array.from(forms).forEach(function(form) {
+                form.addEventListener('submit', function(event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        })();
+    </script>
 </body>
 </html>

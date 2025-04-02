@@ -1,87 +1,89 @@
 package com.rollerspeed.pos.Controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
-import com.rollerspeed.pos.Services.UserService;
 import com.rollerspeed.pos.Model.User;
-import com.rollerspeed.pos.Model.Role;
-import com.rollerspeed.pos.Repository.RoleRepository;
-
+import com.rollerspeed.pos.Services.UserService;
 import jakarta.validation.Valid;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
+import jakarta.servlet.http.HttpServletRequest;
+
+// Importaciones de Swagger (Springdoc OpenAPI)
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 @Controller
 @RequestMapping("/registrer")
+@Tag(name = "Registro de Usuarios", description = "Endpoints para registrar nuevos usuarios")
 public class RegistrerController {
 
     @Autowired
     private UserService userService;
-    
-    @Autowired
-    private RoleRepository roleRepository;
 
+    /**
+     * Muestra el formulario de registro.
+     */
     @GetMapping
-    public String showRegistrationForm(Model model) {
-        System.out.println("Mostrando formulario de registro.");
+    @Operation(summary = "Mostrar el formulario de registro", description = "Retorna la página del formulario de registro")
+    @ApiResponse(responseCode = "200", description = "Formulario de registro cargado correctamente")
+    public String showRegistrationForm(
+        Model model,
+        HttpServletRequest request
+    ) {
         model.addAttribute("user", new User());
-        model.addAttribute("roles", roleRepository.findAll()); // Enviar roles al formulario
-        return "RegistrerForm";  // Asegurar que el template existe en src/main/resources/templates/
+        model.addAttribute("allowedRoles", List.of("ADMINISTRADOR", "ALUMNO", "INSTRUCTOR", "PUBLICO"));
+        return "registrerForm";
     }
 
+    /**
+     * Registra un nuevo usuario.
+     */
     @PostMapping
-    public String registerUser(@Valid @ModelAttribute("user") User user, 
-                               @RequestParam("roles") String roleName, // Recibir el rol seleccionado
-                               BindingResult result, 
-                               RedirectAttributes redirectAttributes) {
-        System.out.println("Iniciando proceso de registro...");
+    @Operation(summary = "Registrar un nuevo usuario", description = "Guarda un nuevo usuario en la base de datos")
+    @ApiResponse(responseCode = "200", description = "Usuario registrado correctamente")
+    @ApiResponse(responseCode = "400", description = "Datos inválidos o faltantes")
+    @ApiResponse(responseCode = "409", description = "El nombre de usuario ya existe")
+    @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    public String registerUser(
+        @Parameter(description = "Datos del usuario a registrar", required = true)
+        @ModelAttribute("user") @Valid User user,
 
+        BindingResult result,
+
+        RedirectAttributes redirectAttributes,
+
+        @Parameter(hidden = true) // Ocultar este parámetro en la documentación
+        HttpServletRequest request
+    ) {
         if (result.hasErrors()) {
-            System.err.println("Errores en la validación del formulario.");
-            return "RegistrerForm";
-        }
-
-        if (user == null) {
-            System.err.println("Error: el objeto usuario es nulo.");
-            redirectAttributes.addFlashAttribute("error", "Error interno: No se recibieron los datos del usuario.");
+            redirectAttributes.addFlashAttribute("error", "Por favor, corrige los errores en el formulario.");
             return "redirect:/registrer";
         }
 
         try {
-            System.out.println("Intentando registrar usuario: " + user.getUsername());
-
-            if (userService.usernameExists(user.getUsername())) {
-                System.err.println("El nombre de usuario ya está en uso: " + user.getUsername());
-                redirectAttributes.addFlashAttribute("error", "El nombre de usuario ya está en uso.");
-                return "redirect:/registrer";
-            }
-
-            // Buscar el rol seleccionado en la base de datos
-            Role role = roleRepository.findByName(roleName)
-                                      .orElseThrow(() -> new RuntimeException("Error: Rol no encontrado."));
-
-            // Asignar rol al usuario
-            Set<Role> roles = new HashSet<>();
-            roles.add(role);
-            user.setRoles(roles);
-
-            // Guardar usuario con su rol
             userService.saveUser(user);
-            System.out.println("Usuario registrado correctamente.");
-
-            redirectAttributes.addFlashAttribute("message", "Usuario registrado con éxito!");
+            redirectAttributes.addFlashAttribute("success", "¡Registro exitoso!");
             return "redirect:/home/index";
-        } catch (Exception e) {
-            System.err.println("Error al registrar usuario: " + e.getMessage());
-            e.printStackTrace();
 
-            redirectAttributes.addFlashAttribute("error", "Error al registrar usuario.");
+        } catch (DataIntegrityViolationException e) {
+            redirectAttributes.addFlashAttribute("error", "El nombre de usuario ya existe");
+            return "redirect:/registrer";
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            redirectAttributes.addFlashAttribute("error", "Error inesperado: " + e.getMessage());
             return "redirect:/registrer";
         }
     }
 }
+
+
+
+

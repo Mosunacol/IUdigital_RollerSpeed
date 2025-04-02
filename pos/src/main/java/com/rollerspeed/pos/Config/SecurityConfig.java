@@ -8,22 +8,54 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.HttpSessionCsrfTokenRepository;
+import org.springframework.security.web.csrf.XorCsrfTokenRequestAttributeHandler;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+
+import com.rollerspeed.pos.Services.UserServiceImpl;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 
 @Configuration
 public class SecurityConfig {
 
+    @Autowired
+    @Lazy
+    private UserServiceImpl userServiceImpl; 
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .authorizeHttpRequests(auth -> auth
-                .anyRequest().permitAll() // 🔹 Permitir acceso a todas las rutas sin autenticación
+            .csrf(csrf -> csrf
+            .csrfTokenRepository(new HttpSessionCsrfTokenRepository())
             )
-            .formLogin(form -> form.disable()) // 🔹 Desactivar formulario de login
-            .logout(logout -> logout.disable()) // 🔹 Desactivar logout
-            .csrf(csrf -> csrf.disable()) // 🔹 Desactivar CSRF si es necesario para pruebas
-            .sessionManagement(session -> session.disable()); // 🔹 Deshabilitar sesiones
 
+            .authorizeHttpRequests(auth -> auth
+                .anyRequest().permitAll() // Permite todas las rutas
+            )
+            .formLogin(form -> form
+            .loginPage("/login") //  login
+            .permitAll()
+        );
+    
         return http.build();
+    }
+
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
+        return authConfig.getAuthenticationManager();
+    }
+
+    @Bean
+    public DaoAuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+        authProvider.setUserDetailsService(userServiceImpl); //
+        authProvider.setPasswordEncoder(passwordEncoder());
+        return authProvider;
     }
 
     @Bean
@@ -32,9 +64,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
-        return authConfig.getAuthenticationManager();
+    public UserDetailsService userDetailsService() {
+        return userServiceImpl; 
     }
-}
-
-
+} 

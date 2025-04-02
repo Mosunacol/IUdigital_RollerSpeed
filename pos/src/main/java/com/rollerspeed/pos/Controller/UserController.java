@@ -1,22 +1,26 @@
 package com.rollerspeed.pos.Controller;
 
-
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-
+import com.rollerspeed.pos.Services.UserService;
+import com.rollerspeed.pos.Model.User;
+import java.util.List;
 
 @Controller
-@RequestMapping(value = "/user")
-
 public class UserController {
-    @GetMapping(value = "/listar")
-    public String listarUsuarios(@RequestParam(required = false) String param) {
-        System.out.println("Parámetro recibido: " + param);
-        return "ListarUsuarios"; // Retorna la vista "ListarUsuarios.html"
+
+    @Autowired
+    private UserService userService;
+
+    @GetMapping("/users") // URL para acceder a la lista
+    public String listUsers(Model model) {
+        List<User> users = userService.findAllUsers(); // Usa el método del servicio
+        model.addAttribute("users", users); // Envía la lista a la vista
+        return "listarUsuarios"; // Nombre del archivo HTML (sin extensión)
     }
-}  
+} 
 
 
 
